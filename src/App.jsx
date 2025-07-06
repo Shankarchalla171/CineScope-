@@ -1,7 +1,7 @@
 import { useState,useEffect } from 'react'
 import { useDebounce } from 'use-debounce';
-import Search from './components/search'
-import Moviecard from './components/moviecard';
+import Search from './components/Search'
+import Moviecard from './components/Moviecard';
 import './App.css'
 import { updatdcount } from './appwrite';
 
