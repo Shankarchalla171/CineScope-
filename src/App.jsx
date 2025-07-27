@@ -3,7 +3,7 @@ import { useDebounce } from 'use-debounce';
 import Search from './components/Search'
 import Moviecard from './components/Moviecard';
 import './App.css'
-import { updatdcount } from './appwrite';
+import {getTrending, updateCount}  from './appwrite';
 
 
  const API_BASE_URL="https://api.themoviedb.org/3";
@@ -23,6 +23,7 @@ function App() {
   const [deInput]=useDebounce(input,500);
   const [error,seterror]=useState(null);
   const [movieList,setmovieList]=useState([]);
+  const [Trending,setTrending]=useState([]);
   const [isloading,setisloading]=useState(false);
 
 
@@ -37,7 +38,7 @@ function App() {
       :`${API_BASE_URL}/discover/movie?sort_by=popularity.desc`
 
       let response=await fetch(END_POINT,options);
-      console.log(response);
+      console.log("response");
 
       if(!response.ok)
       {
@@ -53,7 +54,10 @@ function App() {
       }
       console.log(data);
       setmovieList(data.results || []);
-      updatdcount();
+
+      if(query && data.results.length > 0){
+        await updateCount (query,data.results[0]);
+      }
       console.log(movieList);
       
     } catch (error) {
@@ -62,13 +66,25 @@ function App() {
       setisloading(false);
     }
   }
-
+  
+  const fetchTrending=async()=>{
+    try {
+       const movies =await getTrending();
+       setTrending(movies);
+    } catch (error) {
+      console.error(`error in fetching trending movies : ${error}`);
+      
+    }
+  }
  useEffect(()=>{
 
   fetchMovies(deInput);
 
  },[deInput])
 
+ useEffect(()=>{
+   fetchTrending();
+ },[])
   return (
     <>
      <main>
@@ -79,6 +95,21 @@ function App() {
                 <h1>Find <span className='text-gradient'>Movies</span> you will enjoy without the hassle</h1>
                 <Search input={input} setinput={setinput}/>
               </header>
+              {Trending.length > 0 && (
+                <section className='trending'>
+                  <h2>Trending Movies</h2>
+                  <ul>
+                    {Trending.map((movie,ind)=>(
+                      <li key={movie.$id}>
+                          <p>{ind+1}</p>
+                          <img src={movie.poster_url} alt="" />
+                      </li>
+                    ))}
+                     
+                  </ul>
+
+                </section>
+              )}
               <section className='all-movies'>
                  <h2 className='mt-[40px]'>All Movies</h2>
                 {
